@@ -16,16 +16,14 @@ for (i = 1; i <= n; i++)
 
 /* Them cung e = (x, y) vao do thi G */
 void add_edge(Graph* G, int x, int y) {
-G->A[x][y] = 1; //x lien thuoc voi e
-G->A[y][x] = 1; //y lien thuoc voi e
+	G->A[x][y] = 1;
+	G->A[y][x] = 1;
 }
 
 /* Kiem tra y co ke voi x khong */
 int adjacent(Graph* G, int x, int y) {
-	int e;
-	for (e = 1; e <= G->n; e++)
-		if (G->A[x][y] == 1 && G->A[y][x] == 1)
-			return 1;
+	if (G->A[x][y] == 1 && G->A[y][x] == 1)
+		return 1;
 	return 0;
 }
 
@@ -103,36 +101,44 @@ void s_pop(Stack* S) {
 int s_empty(Stack* S) {
 	return S->size == 0;
 }
+
 /* Duyet do thi theo chieu sau */
-void depth_first_search(Graph* G, int x) {
+void depth_first_search(Graph* G) {
 	Stack frontier;
 	int mark[MAX_VERTEXES];
 	make_null_stack(&frontier);
 	/* Khởi tạo mark, chưa đỉnh nào được xét */
-	int j;
-	for (j = 1; j <= G->n; j++)
-		mark[j] = 0;
+	int i, j;
+	for (i = 1; i <= G->n; i++)
+		mark[i] = 0;
 	/* Đưa 1 vào frontier */
-	s_push(&frontier, x);
-	mark[x] = 1;
+	mark[1] = 0;
 	/* Vòng lặp chính dùng để duyệt */
-	while (!s_empty(&frontier)) {
-		/* Lấy phần tử đầu tiên trong frontier ra */
-		int x = s_top(&frontier);
-		s_pop(&frontier);
-		printf("Duyet %d\n", x);
-		/* Lấy các đỉnh kề của nó */
-		List list = neighbors(G, x);
-		/* Xét các đỉnh kề của nó */
-		for (j = 1; j <= list.size; j++) {
-			int y = element_at(&list, j);
-			if (mark[y] == 0) {
-				mark[y] = 1;
-				s_push(&frontier, y);
+	for (j = 1; j <= G->n; j++) {
+		if (mark[j] == 0) {
+			s_push(&frontier, j);
+			mark[j] = 1;
+			while (!s_empty(&frontier)) {
+				/* Lấy phần tử đầu tiên trong frontier ra */
+				int x = s_top(&frontier); s_pop(&frontier);
+				printf("%d\n", x);
+				/* Lấy các đỉnh kề của nó */
+				List list = neighbors(G, x);
+				/* Xét các đỉnh kề của nó */
+				for (i = 1; i <= list.size; i++) {
+					int y = element_at(&list, i);
+					if (mark[y] == 0) {
+						mark[y] = 1;
+						s_push(&frontier, y);
+					}
+				}
 			}
 		}
 	}
+	
 }
+
+
 
 /* Khai bao Queue */
 #define MAX_ELEMENTS 100
@@ -167,26 +173,32 @@ void breath_first_search(Graph* G) {
 	int mark[MAX_VERTEXES];
 	make_null_queue(&frontier);
 	/* Khởi tạo mark, chưa đỉnh nào được xét */
-	int j;
-	for (j = 1; j <= G->n; j++)
+	int j,i;
+	for (i = 1; i <= G->n; i++)
 		mark[j] = 0;
 	/* Đưa 1 vào frontier */
-	q_push(&frontier, 1);
-	mark[1] = 1;
 	/* Vòng lặp chính dùng để duyệt */
-	while (!q_empty(&frontier)) {
-		/* Lấy phần tử đầu tiên trong frontier ra */
-		int x = q_top(&frontier); q_pop(&frontier);
-		printf("Duyet %d\n", x);
-		/* Lấy các đỉnh kề của nó */
-		List list = neighbors(G, x);
-		/* Xét các đỉnh kề của nó */
-		for (j = 1; j <= list.size; j++) {
-			int y = element_at(&list, j);
-			if (mark[y] == 0) {
-				mark[y] = 1;
-				q_push(&frontier, y);
+	for (j = 1; j <= G->n; j++) {
+		if (mark[j] == 0) {
+			q_push(&frontier, j);
+			mark[j] = 1;
+			while (!q_empty(&frontier)) {
+				/* Lấy phần tử đầu tiên trong frontier ra */
+				int x = q_top(&frontier);
+				q_pop(&frontier);
+				printf("Duyet %d\n", x);
+				/* Lấy các đỉnh kề của nó */
+				List list = neighbors(G, x);
+				/* Xét các đỉnh kề của nó */
+				for (i = 1; i <= list.size; i++) {
+					int y = element_at(&list, j);
+					if (mark[y] == 0) {
+						mark[y] = 1;
+						q_push(&frontier, y);
+					}
+				}
 			}
+	
 		}
 	}
 }
@@ -201,8 +213,7 @@ void traversal(Graph* G, int x) {
 	if (mark[x] == 1)
 		return;
 	/* Ngược lại, duyệt nó */
-	printf("Duyet dinh %d\n", x);
-	mark[x] = 1;
+	printf("%d\n", x);
 	/* Lấy các đỉnh kề của nó và duyệt các đỉnh kề */
 	List list = neighbors(G, x);
 	int j;
@@ -243,7 +254,7 @@ void dfs(Graph* G, int x) {
 int main() {
 	freopen("dothi.txt", "r", stdin); //Khi nộp bài nhớ bỏ dòng này.
 	Graph G;
-	int n, m, u, v, w, x, e;
+	int n, m, u, v, e;
 	scanf("%d%d", &n, &m);
 	init_graph(&G, n);
 	
@@ -252,11 +263,13 @@ int main() {
 		add_edge(&G, u, v);
 	}
 	
-	dfs(&G, 1);
-//	for (v = 1; v <= n; v++) {
-//		
+	breath_first_search(&G);
+//	printf("\n");
+//	for (u=1; u<=n; u++) {
+//		for (v=1; v<=n; v++) {
+//			printf("%d ", G.A[u][v]);
+//		}
 //		printf("\n");
 //	}
-//		
 	return 0;
 }
